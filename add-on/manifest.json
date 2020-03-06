@@ -19,7 +19,8 @@
 	"permissions": [
 		"nativeMessaging",
 		"tabs",
-		"*://play.google.com/music*"
+		"*://play.google.com/music*",
+		"*://*.youtube.com/*"
 	]
 
 }

@@ -33,6 +33,9 @@ port.onMessage.addListener((message) => {
 		case "pause":
 			get_media_tab(pause, 0);
 			break;
+		case "play":
+			get_media_tab(play, 0);
+			break;
 		case "next":
 			get_media_tab(next, 0);
 			break;

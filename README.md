@@ -11,3 +11,4 @@ A simple script to control media on webpages using a filesystem socket. The pyth
 ## To Use
 
 Just write commands to the socket file. I use netcat, like so: `echo -n pause | nc -U ./musiccontroller.sock`. This can also be done programmatically, so for instance an i3 keybind would look like `bindsym XF86AudioPause exec --no-startup-id echo -n "pause" | nc -U /tmp/musiccontroller.sock`.
+Commands are `togglepause`, `pause`, `play`, `next`, `prev`

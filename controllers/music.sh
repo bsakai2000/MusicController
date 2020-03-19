@@ -10,5 +10,25 @@ then
 	exit
 fi
 
-# Send the commands on to MusicController
-echo -n "$1" | nc -U "$socketName"
+# Parse our command and find the equivalent MPRIS command
+cmd=''
+case $1 in
+	"pause")
+		cmd="Pause"
+		;;
+	"play")
+		cmd="Play"
+		;;
+	"togglepause")
+		cmd="PlayPause"
+		;;
+	"next")
+		cmd="Next"
+		;;
+	"prev")
+		cmd="Previous"
+		;;
+esac
+
+# Call musiccontroller over DBus
+dbus-send --dest=org.mpris.MediaPlayer2.musiccontroller --type=method_call --print-reply /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.$cmd

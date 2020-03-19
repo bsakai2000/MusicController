@@ -1,7 +1,7 @@
 {
   "name": "music_controller",
-  "description": "Example host for native messaging",
-  "path": "path/to/MusicController/app/music_controller.py",
+  "description": "Native Messaging powered Music Controller",
+  "path": "path/to/MusicController/app/music_controller",
   "type": "stdio",
   "allowed_extensions": [ "music_controller@example.com" ]
 }

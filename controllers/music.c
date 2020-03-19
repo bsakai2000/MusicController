@@ -2,10 +2,7 @@
 #include <sys/un.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
-
-// The filesystem socket to communicate with Music Controller on
-char socketName[] = "/tmp/musiccontroller.sock";
+#include <dbus/dbus.h>
 
 int main(int argc, char* argv[])
 {
@@ -16,45 +13,70 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	// Try to create a Unix socket
-	int sock = socket(AF_UNIX, SOCK_STREAM, 0);
-	if(sock < 0)
-	{
-		printf("Socket did not create!\n");
-		return 1;
+	DBusMessage* msg;
+	DBusConnection* conn;
+	DBusError err;
+	DBusPendingCall* pending;
+	unsigned int serial = 0;
+
+	dbus_error_init(&err);
+
+	// connect to the system bus and check for errors
+	conn = dbus_bus_get(DBUS_BUS_SESSION, &err);
+	if (dbus_error_is_set(&err)) {
+		fprintf(stderr, "Connection Error (%s)\n", err.message);
+		dbus_error_free(&err);
+	}
+	if (NULL == conn) {
+		exit(1);
 	}
 
-	// Allocate a socket address struct and fill it with correct values
-	struct sockaddr_un* socketAddress = calloc(1, sizeof(struct sockaddr_un));
-	socketAddress->sun_family = AF_UNIX;
-	strcpy(socketAddress->sun_path, socketName);
-
-	// Try to connect to the Music Controller socket
-	int conn = connect(sock, (struct sockaddr*) socketAddress, sizeof(struct sockaddr_un));
-	if(conn < 0)
+#define NUM_COMMANDS 5
+	// List of commands we can run
+	char* commands[NUM_COMMANDS][2] = 
 	{
-		printf("Connection did not create!\n");
-		// Explicit error messages for a few of the more likely errors
-		switch(errno)
+		{"Play", "play"},
+		{"Pause", "pause"},
+		{"PlayPause", "togglepause"},
+		{"Next", "next"},
+		{"Previous", "prev"}
+	};
+
+	char method[20] = "";
+
+	// Check if passed command matches known commands, then find alias
+	for(int i = 0; i < NUM_COMMANDS; ++i)
+	{
+		if(strcmp(commands[i][1], argv[1]) == 0)
 		{
-			case ECONNREFUSED:
-				printf("Connection refused on socket %s\n", socketName);
-				break;
-			case ENOENT:
-				printf("No such socket %s\n", socketName);
-				break;
-			default:
-				printf("errno: %d\n", errno);
+			strcpy(method, commands[i][0]);
+			break;
 		}
-		return 1;
 	}
 
-	// Try to send the command to the Music Controller
-	int didSend = send(sock, argv[1], strlen(argv[1]), 0);
-	if(didSend < 0)
+	// Make call to musiccontroller
+	msg = dbus_message_new_method_call("org.mpris.MediaPlayer2.musiccontroller", // target for the method call
+			"/org/mpris/MediaPlayer2", // object to call on
+			"org.mpris.MediaPlayer2.Player", // interface to call on
+			method); // method name
+
+	// send the reply && flush the connection
+	if (!dbus_connection_send_with_reply(conn, msg, &pending, -1))
 	{
-		printf("Sending failed!\n");
-		return 1;
+		fprintf(stderr, "Out Of Memory!\n");
+		exit(1);
 	}
+
+	// clean up
+	dbus_connection_flush(conn);
+
+	if(pending)
+	{
+		dbus_pending_call_block(pending);
+	}
+
+	// free the reply
+	dbus_message_unref(msg);
+
 	return 0;
 }

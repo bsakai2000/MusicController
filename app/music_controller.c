@@ -114,6 +114,7 @@ void getall_mediaplayer_player(DBusMessage* msg, DBusConnection* conn)
 	add_dict_entry(&dict, "CanPlay", 1);
 	add_dict_entry(&dict, "CanPause", 1);
 	add_dict_entry(&dict, "CanControl", 1);
+	add_dict_entry(&dict, "CanSeek", 0);
 
 	// Clean up our array
 	dbus_message_iter_close_container(&reply_args, &dict);

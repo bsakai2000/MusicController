@@ -19,6 +19,22 @@ var sites = [
 		prevElement: "document.getElementsByClassName('ytp-prev-button')[0]",
 		pauseCheck: ".title == 'Pause (k)'",
 		activate: ".click()"
+	},
+	{
+		url: "*://*.netflix.com/*",
+		pauseElement: "Array.from(document.getElementsByClassName('button-nfplayerPause')).concat(Array.from(document.getElementsByClassName('button-nfplayerPlay')))[0]",
+		nextElement: "document.getElementsByClassName('button-nfplayerFastForward')[0]",
+		prevElement: "document.getElementsByClassName('button-nfplayerBackTen')[0]",
+		pauseCheck: ".getAttribute('aria-label') == 'Pause'",
+		activate: ".click()"
+	},
+	{
+		url: "*://*.dcuniverse.com/*",
+		pauseElement: "document.getElementsByClassName('vjs-play-control')[0]",
+		nextElement: "null",
+		prevElement: "null",
+		pauseCheck: ".title == 'Pause'",
+		activate: ".click()"
 	}
 ];
 

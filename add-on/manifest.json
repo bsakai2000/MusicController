@@ -3,7 +3,7 @@
 	"description": "A music controller for Google Play Music",
 	"manifest_version": 2,
 	"name": "MusicController",
-	"version": "1.0",
+	"version": "1.1",
 
 	"browser_specific_settings": {
 		"gecko": {
@@ -20,7 +20,9 @@
 		"nativeMessaging",
 		"tabs",
 		"*://play.google.com/music*",
-		"*://*.youtube.com/*"
+		"*://*.youtube.com/*",
+		"*://*.netflix.com/*",
+		"*://*.dcuniverse.com/*"
 	]
 
 }

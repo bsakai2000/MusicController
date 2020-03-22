@@ -4,7 +4,7 @@ A simple script to control media on webpages using the MPRIS API. The C app wait
 
 ## To Install
 
- - Build app/music_controller with `gcc -o music_controller music_controller.c $(pkg-config --libs --cflags dbus-1)`
+ - Build `app/music_controller` with `gcc -o music_controller music_controller.c $(pkg-config --libs --cflags dbus-1)`
  - Modify `app/music_controller.json` so the path points to your installation
  - Copy `app/music_controller.json` to `~/.mozilla/native-messaging-hosts/`
  - Install the extension from `about:debugging`

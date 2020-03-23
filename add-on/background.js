@@ -35,6 +35,14 @@ var sites = [
 		prevElement: "null",
 		pauseCheck: ".title == 'Pause'",
 		activate: ".click()"
+	},
+	{
+		url: "*://*.podcasts.google.com/*",
+		pauseElement: "document.getElementsByClassName('DPvwYc ERYGad')[0]",
+		nextElement: "document.getElementsByClassName('DPvwYc UO8XJc')[1]",
+		prevElement: "document.getElementsByClassName('DPvwYc UO8XJc')[0]",
+		pauseCheck: ".style.display != 'none'",
+		activate: ".click()"
 	}
 ];
 

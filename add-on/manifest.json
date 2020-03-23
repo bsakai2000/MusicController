@@ -22,7 +22,8 @@
 		"*://play.google.com/music*",
 		"*://*.youtube.com/*",
 		"*://*.netflix.com/*",
-		"*://*.dcuniverse.com/*"
+		"*://*.dcuniverse.com/*",
+		"*://*.podcasts.google.com/*"
 	]
 
 }

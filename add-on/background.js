@@ -13,6 +13,14 @@ var sites = [
 		activate: ".click()"
 	},
 	{
+		url: "*://music.youtube.com/*",
+		pauseElement: "document.getElementById('play-pause-button')",
+		nextElement: "document.getElementsByClassName('next-button')[0]",
+		prevElement: "document.getElementsByClassName('previous-button')[0]",
+		pauseCheck: ".title == 'Pause'",
+		activate: ".click()"
+	},
+	{
 		url: "*://*.youtube.com/*",
 		pauseElement: "document.getElementsByClassName('ytp-play-button')[0]",
 		nextElement: "document.getElementsByClassName('ytp-next-button')[0]",

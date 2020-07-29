@@ -1,6 +1,9 @@
 // Connect to the python server
 var port = browser.runtime.connectNative("music_controller");
 
+// Global to tell if playing
+var is_playing = false;
+
 // The list of sites we want to try, in the order we want
 // to try them
 var sites = [
@@ -152,17 +155,33 @@ function get_media_tab(successCallback, siteIndex)
 	);
 }
 
-//browser.tabs.onUpdated.addListener(checkAudible);
-setInterval(function(){ get_media_tab(printAudibleStatus, 0); }, 1000);
+// Check once per second for updated audible status
+setInterval(function(){ get_media_tab(print_audible_status, 0); }, 1000);
 
-function printAudibleStatus(tab, site)
+function print_audible_status(tab, site)
 {
-	if(tab.audible)
-	{
-		port.postMessage("Audible");
-	}
-	else
-	{
-		port.postMessage("Inaudible");
-	}
+	// Check if the site is paused
+	browser.tabs.executeScript(tab.id, {
+		code: site.pauseElement + site.pauseCheck
+	}).then(
+		(i) =>
+		{
+			// Only output if it hasn't changed
+			if(i[0] == is_playing)
+			{
+				return;
+			}
+			is_playing = i[0];
+
+			// Print out the correct status message to the executable
+			if(i[0])
+			{
+				port.postMessage("Audible");
+			}
+			else
+			{
+				port.postMessage("Inaudible");
+			}
+		}
+	);
 }

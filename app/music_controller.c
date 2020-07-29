@@ -7,6 +7,7 @@
 #include <string.h>
 #include <pthread.h>
 
+// Points to 1 if audio is playing, 0 otherwise
 int* playback_status = 0;
 
 // Initialize the DBus connection and check for errors
@@ -47,9 +48,10 @@ void request_name(DBusConnection* conn, DBusError* err, char* mpris_name)
 	}
 }
 
-// Adds one string/boolean dictionary entry to dict
+// Adds one string/{type} dictionary entry to dict
 void add_dict_entry(DBusMessageIter* dict, char* attribute, void* attr_value, int type)
 {
+	// Get the string representation of this type
 	char type_string[2] = {type, '\0'};
 
 	DBusMessageIter dict_entry, dict_val;
@@ -64,10 +66,6 @@ void add_dict_entry(DBusMessageIter* dict, char* attribute, void* attr_value, in
 	dbus_message_iter_close_container(&dict_entry, &dict_val);
 	dbus_message_iter_close_container(dict, &dict_entry);
 }
-
-// TODO - Combine these two functions into one, and hold the attributes in an array
-// or something. Since they're bools, we could use a char* to hold their values,
-// but that's kinda hack-y
 
 // Pretend to be a functioning MPRIS media player that has few capabilities
 void getall_mediaplayer(DBusMessage* msg, DBusConnection* conn)
@@ -120,6 +118,7 @@ void getall_mediaplayer_player(DBusMessage* msg, DBusConnection* conn)
 	add_dict_entry(&dict, "CanPause", (void*) 1, DBUS_TYPE_BOOLEAN);
 	add_dict_entry(&dict, "CanControl", (void*) 1, DBUS_TYPE_BOOLEAN);
 	add_dict_entry(&dict, "CanSeek", (void*) 0, DBUS_TYPE_BOOLEAN);
+	// Add dictionary entry telling current playback status
 	add_dict_entry(&dict, "PlaybackStatus", (*playback_status?"Playing":"Paused"), DBUS_TYPE_STRING);
 
 	// Clean up our array
@@ -172,7 +171,6 @@ int check_player_command(DBusMessage* msg)
 		if (dbus_message_is_method_call(msg, "org.mpris.MediaPlayer2.Player", commands[i][0]))
 		{
 			print_player_command(commands[i][1]);
-			//printf(commands[i][1]);
 			return 1;
 		}
 	}
@@ -180,10 +178,49 @@ int check_player_command(DBusMessage* msg)
 	return 0;
 }
 
+// Send a signal with PlaybackStatus
+void emit_playbackstatus_signal(DBusConnection* conn)
+{
+	// Create the PropertiesChanged signal
+	DBusMessage* msg = dbus_message_new_signal("/org/mpris/MediaPlayer2", "org.freedesktop.DBus.Properties", "PropertiesChanged");
+
+	DBusMessageIter msg_args, changed_values, changed_novalues;
+	// Create the message arguments
+	dbus_message_iter_init_append(msg, &msg_args);
+
+	// Append the name to the arguments
+	char* name = strdup("org.mpris.MediaPlayer2.Player");
+	dbus_message_iter_append_basic(&msg_args, DBUS_TYPE_STRING, &name);
+	free(name);
+
+	// Append an array to args with the playback status
+	dbus_message_iter_open_container(&msg_args, DBUS_TYPE_ARRAY, "{sv}", &changed_values);
+	add_dict_entry(&changed_values, "PlaybackStatus", (*playback_status?"Playing":"Paused"), DBUS_TYPE_STRING);
+	dbus_message_iter_close_container(&msg_args, &changed_values);
+
+	// Append an empty array to args
+	dbus_message_iter_open_container(&msg_args, DBUS_TYPE_ARRAY, "{sv}", &changed_novalues);
+	dbus_message_iter_close_container(&msg_args, &changed_values);
+
+	// Send the message
+	dbus_uint32_t serial = 0;
+	if(!dbus_connection_send(conn, msg, &serial))
+	{
+		fprintf(stderr, "Out Of Memory!\n");
+		exit(1);
+	}
+
+	// Clean up
+	dbus_message_unref(msg);
+}
+
+// Listen for playing status from background.js
 void* listen_for_status(void* args)
 {
+	// Continually listen for messages from background.js
 	while(1)
 	{
+		// Read the message length (4 bytes, little endian)
 		unsigned int message_length;
 		for(int i = 0; i < 4; ++i)
 		{
@@ -193,20 +230,33 @@ void* listen_for_status(void* args)
 			}
 		}
 
+		// Read the message of length message_length
 		char* message = calloc(message_length + 1, sizeof(char));
-		char format_string[100];
-		snprintf(format_string, 100, "%%%us\0", message_length);
-		scanf(format_string, message);
+		for(int i = 0; i < message_length; ++i)
+		{
+			scanf("%c", message + i);
+		}
 
-		if(strcmp(message, "\"Audible\"") == 0 && *playback_status == 0)
+		int old_status = *playback_status;
+
+		// Update the playback status
+		if(strcmp(message, "\"Audible\"") == 0)
 		{
 			*playback_status = 1;
 		}
-		else if(strcmp(message, "\"Inaudible\"") == 0 && *playback_status == 1)
+		else if(strcmp(message, "\"Inaudible\"") == 0)
 		{
 			*playback_status = 0;
 		}
+
+		// If the status has changed, emit a PropertiesChanged signal
+		if(old_status != *playback_status)
+		{
+			emit_playbackstatus_signal((DBusConnection*) args);
+		}
+
 		free(message);
+
 	}
 	return args;
 }
@@ -224,8 +274,9 @@ int main()
 	playback_status = calloc(1, sizeof(int));
 	*playback_status = 0;
 
+	// Start thread to listen for playback status from background.js
 	pthread_t tid;
-	pthread_create(&tid, 0, listen_for_status, NULL);
+	pthread_create(&tid, 0, listen_for_status, conn);
 	
 	// loop, testing for new messages
 	while (1)

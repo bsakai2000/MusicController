@@ -151,3 +151,18 @@ function get_media_tab(successCallback, siteIndex)
 		}
 	);
 }
+
+//browser.tabs.onUpdated.addListener(checkAudible);
+setInterval(function(){ get_media_tab(printAudibleStatus, 0); }, 1000);
+
+function printAudibleStatus(tab, site)
+{
+	if(tab.audible)
+	{
+		port.postMessage("Audible");
+	}
+	else
+	{
+		port.postMessage("Inaudible");
+	}
+}

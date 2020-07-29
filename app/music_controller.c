@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <pthread.h>
+
+int* playback_status = 0;
 
 // Initialize the DBus connection and check for errors
 void init_dbus(DBusConnection** conn, DBusError* err)
@@ -45,16 +48,18 @@ void request_name(DBusConnection* conn, DBusError* err, char* mpris_name)
 }
 
 // Adds one string/boolean dictionary entry to dict
-void add_dict_entry(DBusMessageIter* dict, char* attribute, int attr_value)
+void add_dict_entry(DBusMessageIter* dict, char* attribute, void* attr_value, int type)
 {
+	char type_string[2] = {type, '\0'};
+
 	DBusMessageIter dict_entry, dict_val;
 	// Create our entry in the dictionary
 	dbus_message_iter_open_container(dict, DBUS_TYPE_DICT_ENTRY, NULL, &dict_entry);
 	// Add the attribute string
 	dbus_message_iter_append_basic(&dict_entry, DBUS_TYPE_STRING, &attribute);
 	// Create the value for this entry
-	dbus_message_iter_open_container(&dict_entry, DBUS_TYPE_VARIANT, "b", &dict_val);
-	dbus_message_iter_append_basic(&dict_val, DBUS_TYPE_BOOLEAN, &attr_value);
+	dbus_message_iter_open_container(&dict_entry, DBUS_TYPE_VARIANT, type_string, &dict_val);
+	dbus_message_iter_append_basic(&dict_val, type, &attr_value);
 	// Clean up and return
 	dbus_message_iter_close_container(&dict_entry, &dict_val);
 	dbus_message_iter_close_container(dict, &dict_entry);
@@ -77,9 +82,9 @@ void getall_mediaplayer(DBusMessage* msg, DBusConnection* conn)
 	dbus_message_iter_open_container(&reply_args, DBUS_TYPE_ARRAY, "{sv}", &dict);
 
 	// Add dictionary entries claiming we don't have these capabilities
-	add_dict_entry(&dict, "CanQuit", 0);
-	add_dict_entry(&dict, "CanRaise", 0);
-	add_dict_entry(&dict, "HasTrackList", 0);
+	add_dict_entry(&dict, "CanQuit", (void*) 0, DBUS_TYPE_BOOLEAN);
+	add_dict_entry(&dict, "CanRaise", (void*) 0, DBUS_TYPE_BOOLEAN);
+	add_dict_entry(&dict, "HasTrackList", (void*) 0, DBUS_TYPE_BOOLEAN);
 
 	// Clean up our array
 	dbus_message_iter_close_container(&reply_args, &dict);
@@ -109,12 +114,13 @@ void getall_mediaplayer_player(DBusMessage* msg, DBusConnection* conn)
 	dbus_message_iter_open_container(&reply_args, DBUS_TYPE_ARRAY, "{sv}", &dict);
 
 	// Add dictionary entries telling we have these capabilities
-	add_dict_entry(&dict, "CanGoNext", 1);
-	add_dict_entry(&dict, "CanGoPrevious", 1);
-	add_dict_entry(&dict, "CanPlay", 1);
-	add_dict_entry(&dict, "CanPause", 1);
-	add_dict_entry(&dict, "CanControl", 1);
-	add_dict_entry(&dict, "CanSeek", 0);
+	add_dict_entry(&dict, "CanGoNext", (void*) 1, DBUS_TYPE_BOOLEAN);
+	add_dict_entry(&dict, "CanGoPrevious", (void*) 1, DBUS_TYPE_BOOLEAN);
+	add_dict_entry(&dict, "CanPlay", (void*) 1, DBUS_TYPE_BOOLEAN);
+	add_dict_entry(&dict, "CanPause", (void*) 1, DBUS_TYPE_BOOLEAN);
+	add_dict_entry(&dict, "CanControl", (void*) 1, DBUS_TYPE_BOOLEAN);
+	add_dict_entry(&dict, "CanSeek", (void*) 0, DBUS_TYPE_BOOLEAN);
+	add_dict_entry(&dict, "PlaybackStatus", (*playback_status?"Playing":"Paused"), DBUS_TYPE_STRING);
 
 	// Clean up our array
 	dbus_message_iter_close_container(&reply_args, &dict);
@@ -154,7 +160,7 @@ int check_player_command(DBusMessage* msg)
 	char* commands[NUM_PLAYER_COMMANDS][2] =
 	{
 		{"Pause", "pause"},
-		{"Play", "togglepause"},
+		{"Play", "play"},
 		{"PlayPause", "togglepause"},
 		{"Next", "next"},
 		{"Previous", "prev"}
@@ -174,6 +180,37 @@ int check_player_command(DBusMessage* msg)
 	return 0;
 }
 
+void* listen_for_status(void* args)
+{
+	while(1)
+	{
+		unsigned int message_length;
+		for(int i = 0; i < 4; ++i)
+		{
+			if(scanf("%c", ((char*) &message_length) + i) == EOF)
+			{
+				abort();
+			}
+		}
+
+		char* message = calloc(message_length + 1, sizeof(char));
+		char format_string[100];
+		snprintf(format_string, 100, "%%%us\0", message_length);
+		scanf(format_string, message);
+
+		if(strcmp(message, "\"Audible\"") == 0 && *playback_status == 0)
+		{
+			*playback_status = 1;
+		}
+		else if(strcmp(message, "\"Inaudible\"") == 0 && *playback_status == 1)
+		{
+			*playback_status = 0;
+		}
+		free(message);
+	}
+	return args;
+}
+
 int main()
 {
 	DBusError err;
@@ -183,6 +220,12 @@ int main()
 	// Setup DBus connection and ensure we own our name
 	init_dbus(&conn, &err);
 	request_name(conn, &err, mpris_name);
+	
+	playback_status = calloc(1, sizeof(int));
+	*playback_status = 0;
+
+	pthread_t tid;
+	pthread_create(&tid, 0, listen_for_status, NULL);
 	
 	// loop, testing for new messages
 	while (1)

@@ -54,6 +54,14 @@ var sites = [
 		prevElement: "document.getElementsByClassName('DPvwYc UO8XJc')[0]",
 		pauseCheck: ".style.display != 'none'",
 		activate: ".click()"
+	},
+	{
+		url: "*://*.hulu.com/*",
+		pauseElement: "document.getElementsByClassName('controls__playback-button')[0]",
+		nextElement: "document.getElementsByClassName('controls__fastforward-button')[0]",
+		prevElement: "document.getElementsByClassName('controls__rewind-button')[0]",
+		pauseCheck: ".classList.contains('controls__playback-button--playing')",
+		activate: ".click()"
 	}
 ];
 

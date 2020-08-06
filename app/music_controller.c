@@ -200,7 +200,7 @@ void emit_playbackstatus_signal(DBusConnection* conn)
 
 	// Append an empty array to args
 	dbus_message_iter_open_container(&msg_args, DBUS_TYPE_ARRAY, "{sv}", &changed_novalues);
-	dbus_message_iter_close_container(&msg_args, &changed_values);
+	dbus_message_iter_close_container(&msg_args, &changed_novalues);
 
 	// Send the message
 	dbus_uint32_t serial = 0;

@@ -15,7 +15,7 @@ Use DBus to send commands to MusicController. I use `dbus-send`, like so:
 
 	dbus-send --dest=org.mpris.MediaPlayer2.musiccontroller --type=method_call --print-reply /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Pause
 
-DBus endpoints are `Play`, `Pause`, `PlayPause`, `Next`, `Previous`. For logistical reasons involving `mpris-proxy`, `Play` is an alias for `PlayPause` 
+DBus endpoints are `Play`, `Pause`, `PlayPause`, `Next`, `Previous`
 
 This can also be automated. There are a couple simple examples for cli interfaces in different languanges in `/controllers`, so it would be relatively simple to adapt one into a custom script. One could also choose to bind keyboard keys to trigger media events, so for instance an i3 keybind would look like
 

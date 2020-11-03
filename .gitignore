@@ -1,0 +1,4 @@
+*.o
+app/music_controller
+*.zip
+controllers/music

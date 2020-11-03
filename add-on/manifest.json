@@ -1,9 +1,9 @@
 {
 
-	"description": "A music controller for Google Play Music",
+	"description": "An MPRIS controller for several media sites",
 	"manifest_version": 2,
 	"name": "MusicController",
-	"version": "1.3",
+	"version": "1.5",
 
 	"browser_specific_settings": {
 		"gecko": {
@@ -24,7 +24,8 @@
 		"*://*.netflix.com/*",
 		"*://*.dcuniverse.com/*",
 		"*://*.podcasts.google.com/*",
-		"*://*.hulu.com/*"
+		"*://*.hulu.com/*",
+		"*://*.amazon.com/*"
 	]
 
 }

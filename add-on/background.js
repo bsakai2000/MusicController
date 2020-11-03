@@ -9,59 +9,59 @@ var is_playing = false;
 var sites = [
 	{
 		url: "*://play.google.com/music*",
-		pauseElement: "document.getElementById('player-bar-play-pause')",
-		nextElement: "document.getElementById('player-bar-forward')",
-		prevElement: "document.getElementById('player-bar-rewind')",
-		pauseCheck: ".title == 'Pause'",
-		activate: ".click()"
+		pausePlay: "document.getElementById('player-bar-play-pause').click()",
+		pauseCheck: "document.getElementById('player-bar-play-pause').title == 'Pause'",
+		next: "document.getElementById('player-bar-forward').click()",
+		prev: "document.getElementById('player-bar-rewind').click()"
 	},
 	{
 		url: "*://music.youtube.com/*",
-		pauseElement: "document.getElementById('play-pause-button')",
-		nextElement: "document.getElementsByClassName('next-button')[0]",
-		prevElement: "document.getElementsByClassName('previous-button')[0]",
-		pauseCheck: ".title == 'Pause'",
-		activate: ".click()"
+		pausePlay: "document.getElementById('play-pause-button').click()",
+		pauseCheck: "document.getElementById('play-pause-button').title == 'Pause'",
+		next: "document.getElementsByClassName('next-button')[0].click()",
+		prev: "document.getElementsByClassName('previous-button')[0].click()"
 	},
 	{
 		url: "*://*.youtube.com/*",
-		pauseElement: "document.getElementsByClassName('ytp-play-button')[0]",
-		nextElement: "document.getElementsByClassName('ytp-next-button')[0]",
-		prevElement: "document.getElementsByClassName('ytp-prev-button')[0]",
-		pauseCheck: ".title == 'Pause (k)'",
-		activate: ".click()"
+		pausePlay: "document.getElementsByClassName('ytp-play-button')[0].click()",
+		pauseCheck: "document.getElementsByClassName('ytp-play-button')[0].title == 'Pause (k)'",
+		next: "document.getElementsByClassName('ytp-next-button')[0].click()",
+		prev: "document.getElementsByClassName('ytp-prev-button')[0].click()"
 	},
 	{
 		url: "*://*.netflix.com/*",
-		pauseElement: "Array.from(document.getElementsByClassName('button-nfplayerPause')).concat(Array.from(document.getElementsByClassName('button-nfplayerPlay')))[0]",
-		nextElement: "document.getElementsByClassName('button-nfplayerFastForward')[0]",
-		prevElement: "document.getElementsByClassName('button-nfplayerBackTen')[0]",
-		pauseCheck: ".getAttribute('aria-label') == 'Pause'",
-		activate: ".click()"
+		pausePlay: "Array.from(document.getElementsByClassName('button-nfplayerPause')).concat(Array.from(document.getElementsByClassName('button-nfplayerPlay')))[0].click()",
+		pauseCheck: "Array.from(document.getElementsByClassName('button-nfplayerPause')).concat(Array.from(document.getElementsByClassName('button-nfplayerPlay')))[0].getAttribute('aria-label') == 'Pause'",
+		next: "document.getElementsByClassName('button-nfplayerFastForward')[0].click()",
+		prev: "document.getElementsByClassName('button-nfplayerBackTen')[0].click()"
 	},
 	{
 		url: "*://*.dcuniverse.com/*",
-		pauseElement: "document.getElementsByClassName('vjs-play-control')[0]",
-		nextElement: "null",
-		prevElement: "null",
-		pauseCheck: ".title == 'Pause'",
-		activate: ".click()"
+		pausePlay: "document.getElementsByClassName('vjs-play-control')[0].click()",
+		pauseCheck: "document.getElementsByClassName('vjs-play-control')[0].title == 'Pause'",
+		next: "",
+		prev: ""
 	},
 	{
 		url: "*://*.podcasts.google.com/*",
-		pauseElement: "document.getElementsByClassName('DPvwYc ERYGad')[0]",
-		nextElement: "document.getElementsByClassName('DPvwYc UO8XJc')[1]",
-		prevElement: "document.getElementsByClassName('DPvwYc UO8XJc')[0]",
-		pauseCheck: ".style.display != 'none'",
-		activate: ".click()"
+		pausePlay: "document.getElementsByClassName('DPvwYc ERYGad')[0].click()",
+		pauseCheck: "document.getElementsByClassName('DPvwYc ERYGad')[0].style.display == 'none'",
+		next: "document.getElementsByClassName('DPvwYc UO8XJc')[1].click()",
+		prev: "document.getElementsByClassName('DPvwYc UO8XJc')[0].click()"
 	},
 	{
 		url: "*://*.hulu.com/*",
-		pauseElement: "document.getElementsByClassName('controls__playback-button')[0]",
-		nextElement: "document.getElementsByClassName('controls__fastforward-button')[0]",
-		prevElement: "document.getElementsByClassName('controls__rewind-button')[0]",
-		pauseCheck: ".classList.contains('controls__playback-button--playing')",
-		activate: ".click()"
+		pausePlay: "Array.from(document.getElementsByClassName('PlayButton')).concat(Array.from( document.getElementsByClassName('PauseButton')))[0].click()",
+		pauseCheck: "Array.from(document.getElementsByClassName('PlayButton')).concat(Array.from( document.getElementsByClassName('PauseButton')))[0].classList.contains('PauseButton')",
+		next: "document.getElementsByClassName('FastForwardButton')[0].click()",
+		prev: "document.getElementsByClassName('RewindButton')[0].click()"
+	},
+	{
+		url: "*://*.amazon.com/gp/video/*",
+		pausePlay: "{let mc_player = document.getElementsByTagName('video')[0]; (mc_player.paused?mc_player.play():mc_player.pause())}",
+		pauseCheck: "document.getElementsByTagName('video')[0].paused == false",
+		next: "document.getElementsByClassName('fastSeekForward')[0].click()",
+		prev: "document.getElementsByClassName('fastSeekBack')[0].click()"
 	}
 ];
 
@@ -92,7 +92,7 @@ port.onMessage.addListener((message) => {
 function toggle_pause(tab, site)
 {
 	browser.tabs.executeScript(tab.id, {
-		code: site.pauseElement + site.activate
+		code: site.pausePlay
 	});
 }
 
@@ -100,7 +100,7 @@ function toggle_pause(tab, site)
 function pause(tab, site)
 {
 	browser.tabs.executeScript(tab.id, {
-		code: "if(" + site.pauseElement + site.pauseCheck + "){" + site.pauseElement + site.activate + "}"
+		code: "if(" + site.pauseCheck + "){" + site.pausePlay + "}"
 	});
 }
 
@@ -108,7 +108,7 @@ function pause(tab, site)
 function play(tab, site)
 {
 	browser.tabs.executeScript(tab.id, {
-		code: "if(!(" + site.pauseElement + site.pauseCheck + ")){" + site.pauseElement + site.activate + "}"
+		code: "if(!(" + site.pauseCheck + ")){" + site.pausePlay + "}"
 	});
 }
 
@@ -116,7 +116,7 @@ function play(tab, site)
 function next(tab, site)
 {
 	browser.tabs.executeScript(tab.id, {
-		code: site.nextElement + site.activate
+		code: site.next
 	});
 }
 
@@ -124,7 +124,7 @@ function next(tab, site)
 function prev(tab, site)
 {
 	browser.tabs.executeScript(tab.id, {
-		code: site.prevElement + site.activate
+		code: site.prev
 	});
 }
 
@@ -170,7 +170,7 @@ function print_audible_status(tab, site)
 {
 	// Check if the site is paused
 	browser.tabs.executeScript(tab.id, {
-		code: site.pauseElement + site.pauseCheck
+		code: site.pauseCheck
 	}).then(
 		(i) =>
 		{

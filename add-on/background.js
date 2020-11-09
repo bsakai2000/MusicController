@@ -62,6 +62,13 @@ var sites = [
 		pauseCheck: "document.getElementsByTagName('video')[0].paused == false",
 		next: "document.getElementsByClassName('fastSeekForward')[0].click()",
 		prev: "document.getElementsByClassName('fastSeekBack')[0].click()"
+	},
+	{
+		url: "*://mediasite.mms.rpi.edu/*",
+		pausePlay: "document.getElementById('player-iframe').contentDocument.getElementsByClassName('pause')[0].click()",
+		pauseCheck: "document.getElementById('player-iframe').contentDocument.getElementsByTagName('video')[0].paused == false",
+		next: "",
+		prev: "document.getElementById('player-iframe').contentDocument.getElementsByClassName('skipback')[0].click()"
 	}
 ];
 

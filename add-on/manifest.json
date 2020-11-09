@@ -25,7 +25,7 @@
 		"*://*.dcuniverse.com/*",
 		"*://*.podcasts.google.com/*",
 		"*://*.hulu.com/*",
-		"*://*.amazon.com/*"
+		"*://*.amazon.com/*",
+		"*://mediasite.mms.rpi.edu/*"
 	]
-
 }

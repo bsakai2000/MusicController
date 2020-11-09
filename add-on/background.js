@@ -67,7 +67,7 @@ var sites = [
 		url: "*://mediasite.mms.rpi.edu/*",
 		pausePlay: "document.getElementById('player-iframe').contentDocument.getElementsByClassName('pause')[0].click()",
 		pauseCheck: "document.getElementById('player-iframe').contentDocument.getElementsByTagName('video')[0].paused == false",
-		next: "",
+		next: "document.getElementById('player-iframe').contentDocument.getElementsByClassName('rate')[0].click()",
 		prev: "document.getElementById('player-iframe').contentDocument.getElementsByClassName('skipback')[0].click()"
 	}
 ];

@@ -26,6 +26,7 @@
 		"*://*.podcasts.google.com/*",
 		"*://*.hulu.com/*",
 		"*://*.amazon.com/*",
-		"*://mediasite.mms.rpi.edu/*"
+		"*://mediasite.mms.rpi.edu/*",
+		"*://soundcloud.com/*"
 	]
 }

@@ -69,6 +69,14 @@ var sites = [
 		pauseCheck: "document.getElementById('player-iframe').contentDocument.getElementsByTagName('video')[0].paused == false",
 		next: "document.getElementById('player-iframe').contentDocument.getElementsByClassName('rate')[0].click()",
 		prev: "document.getElementById('player-iframe').contentDocument.getElementsByClassName('skipback')[0].click()"
+	},
+	{
+		url: "*://soundcloud.com/*",
+		pausePlay: "document.getElementsByClassName('playControls__play')[0].click()",
+		pauseCheck: "document.getElementsByClassName('playControls__play')[0].title == 'Pause current'",
+		next: "document.getElementsByClassName('playControls__next')[0].click()",
+		prev: "document.getElementsByClassName('playControls__prev')[0].click()"
+
 	}
 ];
 

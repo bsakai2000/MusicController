@@ -3,7 +3,7 @@
 	"description": "An MPRIS controller for several media sites",
 	"manifest_version": 2,
 	"name": "MusicController",
-	"version": "1.6",
+	"version": "1.7",
 
 	"browser_specific_settings": {
 		"gecko": {
